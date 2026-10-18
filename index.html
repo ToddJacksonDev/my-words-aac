@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#24675f">
+  <meta name="description" content="A simple picture communication board for everyday needs, feelings, and how your body feels.">
+  <title>My Words · Communication Board</title>
+  <link rel="icon" href="./icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./styles.css">
+  <script src="./app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#word-grid">Skip to words</a>
+  <div class="app-shell">
+    <header class="site-header">
+      <a class="brand" href="./" aria-label="My Words home"><span class="brand-icon" aria-hidden="true">✦</span><span>my words<span class="brand-caption">A little help saying what you need.</span></span></a>
+      <button id="settings-open" class="outline-button"><span aria-hidden="true">⚙</span> Settings</button>
+    </header>
+
+    <main>
+      <section class="message-panel" aria-label="Your message">
+        <div class="message-content"><span class="eyebrow">MY MESSAGE</span><p id="message" aria-live="polite" aria-atomic="true">What would you like to say?</p><span id="speech-status">Tap a picture. I’ll say it out loud.</span></div>
+        <div class="message-actions"><button id="say-again" class="primary-button" disabled><span aria-hidden="true">♫</span> Say again</button><button id="clear" class="text-button" disabled>Clear message</button></div>
+      </section>
+
+      <section class="quick-section" aria-label="Quick words">
+        <button class="quick-word yes" data-label="Yes" data-phrase="Yes." aria-pressed="false"><span aria-hidden="true">✓</span> Yes</button>
+        <button class="quick-word no" data-label="No" data-phrase="No." aria-pressed="false"><span aria-hidden="true">✕</span> No</button>
+        <button class="quick-word help" data-label="Help" data-phrase="I need help." aria-pressed="false"><span aria-hidden="true">✋</span> Help</button>
+        <button class="quick-word stop" data-label="Stop" data-phrase="Stop, please." aria-pressed="false"><span aria-hidden="true">🛑</span> Stop</button>
+      </section>
+
+      <nav id="categories" class="categories" aria-label="Word categories"></nav>
+      <section class="board" aria-labelledby="category-title">
+        <div class="board-heading"><h1 id="category-title">Everyday needs</h1><span id="category-hint">Things that help me feel comfortable.</span></div>
+        <div id="word-grid" class="word-grid" tabindex="-1"></div>
+      </section>
+      <noscript><p class="notice">Please turn on JavaScript to use the communication buttons.</p></noscript>
+    </main>
+    <footer><span class="footer-flower" aria-hidden="true">✳</span> Your words matter. Take your time.<span id="voice-indicator">Voice is on</span></footer>
+  </div>
+
+  <dialog id="settings" aria-labelledby="settings-title">
+    <div class="dialog-heading"><h2 id="settings-title">Make it comfortable</h2><button id="settings-close" class="outline-button">Done</button></div>
+    <p>These settings stay on this device.</p>
+    <label class="toggle-row" for="auto-speak"><span><strong>Speak when I tap</strong><small>Turn off for quiet picture communication.</small></span><input type="checkbox" id="auto-speak" checked></label>
+    <label class="field-label" for="voice">Voice</label><select id="voice"><option value="">Device default</option></select>
+    <label class="field-label" for="rate">Speaking speed</label><select id="rate"><option value="0.75">Slower</option><option value="0.9" selected>Gentle</option><option value="1">Normal</option></select>
+    <button id="test-voice" class="primary-button">Try voice</button><button id="stop-voice" class="outline-button">Stop voice</button>
+    <p id="settings-status" role="status"></p>
+    <p class="settings-note">Use your device’s volume buttons to adjust sound. Pictures are emoji and may look different on each device. No messages are saved by this website.</p>
+  </dialog>
+</body>
+</html>
