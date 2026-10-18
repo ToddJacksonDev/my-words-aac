@@ -8,6 +8,8 @@
   <title>My Words · Communication Board</title>
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./styles.css">
+  <script src="./audio/manifest.js" defer></script>
+  <script src="./speech-player.js" defer></script>
   <script src="./app.js" defer></script>
 </head>
 <body>
@@ -49,7 +51,7 @@
     <label class="field-label" for="rate">Speaking speed</label><select id="rate"><option value="0.75">Slower</option><option value="0.9" selected>Gentle</option><option value="1">Normal</option></select>
     <button id="test-voice" class="primary-button">Try voice</button><button id="stop-voice" class="outline-button">Stop voice</button>
     <p id="settings-status" role="status"></p>
-    <p class="settings-note">Use your device’s volume buttons to adjust sound. Pictures are emoji and may look different on each device. No messages are saved by this website.</p>
+    <p class="settings-note">Andrew is a saved male voice with a gentle pace. Use your device’s volume buttons to adjust sound. Pictures are emoji and may look different on each device. Your message selections are not recorded.</p>
   </dialog>
 </body>
 </html>

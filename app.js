@@ -29,12 +29,17 @@ const categories = [
 
 const $ = (id) => document.getElementById(id);
 const synth = window.speechSynthesis;
-const speechAvailable = Boolean(synth && window.SpeechSynthesisUtterance);
-let settings = { autoSpeak:true, voice:'', rate:0.9 };
+const deviceSpeechAvailable = Boolean(synth && window.SpeechSynthesisUtterance);
+const savedSpeech = window.SAVED_SPEECH;
+const savedSpeechAvailable = Boolean(savedSpeech?.clips && window.SavedSpeechPlayer);
+const savedVoiceId = 'saved:andrew';
+const speechAvailable = savedSpeechAvailable || deviceSpeechAvailable;
+let settings = { autoSpeak:true, voice:savedSpeechAvailable ? savedVoiceId : '', rate:0.9, savedVoiceVersion:1 };
 try {
   const saved = JSON.parse(localStorage.getItem('my-words-settings'));
   if (saved && typeof saved.autoSpeak === 'boolean') settings.autoSpeak = saved.autoSpeak;
-  if (saved && typeof saved.voice === 'string') settings.voice = saved.voice;
+  // Existing visitors receive the new saved voice once; later choices are respected.
+  if (saved && typeof saved.voice === 'string' && (!savedSpeechAvailable || saved.savedVoiceVersion === 1)) settings.voice = saved.voice;
   if (saved && [0.75, 0.9, 1].includes(saved.rate)) settings.rate = saved.rate;
 } catch { /* The board still works when storage is unavailable. */ }
 let currentPhrase = '';
@@ -42,13 +47,17 @@ let currentLabel = '';
 let currentUtterance = null;
 let selectedButton = null;
 let speechToken = 0;
+const savedPlayer = savedSpeechAvailable ? new window.SavedSpeechPlayer(savedSpeech.clips, reportSpeech) : null;
+if (!deviceSpeechAvailable && savedSpeechAvailable) settings.voice = savedVoiceId;
+persistSettings();
 
 function persistSettings() {
   try { localStorage.setItem('my-words-settings', JSON.stringify(settings)); } catch { /* Private mode may block storage. */ }
 }
 function stopSpeech() {
   speechToken += 1;
-  if (speechAvailable) synth.cancel();
+  if (deviceSpeechAvailable) synth.cancel();
+  savedPlayer?.stop();
   currentUtterance = null;
 }
 function reportSpeech(text) {
@@ -57,7 +66,11 @@ function reportSpeech(text) {
 }
 function speak(text) {
   stopSpeech();
-  if (!speechAvailable) {
+  if (settings.voice === savedVoiceId && savedPlayer) {
+    savedPlayer.play(text, settings.rate);
+    return;
+  }
+  if (!deviceSpeechAvailable) {
     reportSpeech('Voice is unavailable in this browser. You can still show your message.');
     return;
   }
@@ -148,14 +161,16 @@ $('clear').addEventListener('click', () => {
   updateVoiceStatus();
 });
 function updateVoiceStatus() {
-  $('voice-indicator').textContent = !speechAvailable ? 'Pictures only · voice unavailable' : settings.autoSpeak ? 'Voice is on' : 'Quiet mode';
+  $('voice-indicator').textContent = !speechAvailable ? 'Pictures only · voice unavailable' : settings.autoSpeak ? (settings.voice === savedVoiceId ? 'Andrew · voice on' : 'Device voice is on') : 'Quiet mode';
   reportSpeech(!speechAvailable ? 'Voice is unavailable in this browser. You can still show your message.' : settings.autoSpeak ? 'Tap a picture. I’ll say it out loud.' : 'Quiet mode. Tap a picture to show your message.');
 }
 function populateVoices() {
-  const voices = speechAvailable ? synth.getVoices().filter((voice) => /^en([-_]|$)/i.test(voice.lang)) : [];
-  $('voice').replaceChildren(new Option('Device default', ''));
+  const voices = deviceSpeechAvailable ? synth.getVoices().filter((voice) => /^en([-_]|$)/i.test(voice.lang)) : [];
+  $('voice').replaceChildren();
+  if (savedSpeechAvailable) $('voice').add(new Option(savedSpeech.label, savedVoiceId));
+  if (deviceSpeechAvailable) $('voice').add(new Option('Device default', ''));
   voices.forEach((voice) => $('voice').add(new Option(`${voice.name} (${voice.lang})`, voice.voiceURI)));
-  $('voice').value = voices.some((voice) => voice.voiceURI === settings.voice) ? settings.voice : '';
+  $('voice').value = (savedSpeechAvailable && settings.voice === savedVoiceId) || voices.some((voice) => voice.voiceURI === settings.voice) ? settings.voice : '';
 }
 $('auto-speak').checked = settings.autoSpeak;
 $('rate').value = String(settings.rate);
@@ -165,7 +180,7 @@ $('auto-speak').addEventListener('change', (event) => {
   persistSettings();
   updateVoiceStatus();
 });
-$('voice').addEventListener('change', (event) => { stopSpeech(); settings.voice = event.target.value; persistSettings(); });
+$('voice').addEventListener('change', (event) => { stopSpeech(); settings.voice = event.target.value; persistSettings(); updateVoiceStatus(); });
 $('rate').addEventListener('change', (event) => { stopSpeech(); settings.rate = Number(event.target.value); persistSettings(); });
 $('settings-open').addEventListener('click', () => { stopSpeech(); $('settings-status').textContent = ''; $('settings').showModal(); });
 $('settings-close').addEventListener('click', () => $('settings').close());
@@ -174,8 +189,8 @@ $('test-voice').addEventListener('click', () => speak('Hello. These are my words
 $('stop-voice').addEventListener('click', () => { stopSpeech(); reportSpeech('Voice stopped.'); });
 document.addEventListener('visibilitychange', () => { if (document.hidden) stopSpeech(); });
 window.addEventListener('pagehide', stopSpeech);
-if (speechAvailable) synth.addEventListener('voiceschanged', populateVoices);
-else ['auto-speak', 'voice', 'rate', 'test-voice', 'stop-voice'].forEach((id) => { $(id).disabled = true; });
+if (deviceSpeechAvailable) synth.addEventListener('voiceschanged', populateVoices);
+if (!speechAvailable) ['auto-speak', 'voice', 'rate', 'test-voice', 'stop-voice'].forEach((id) => { $(id).disabled = true; });
 populateVoices();
 updateVoiceStatus();
 showCategory(categories[0]);

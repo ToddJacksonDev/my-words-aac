@@ -1,0 +1,11 @@
+{
+  "provider": "Microsoft Azure Speech",
+  "voice": "en-US-AndrewMultilingualNeural",
+  "language": "en-US",
+  "style": "empathetic",
+  "styleDegree": "0.7",
+  "rate": "-10%",
+  "pitch": "-2%",
+  "format": "audio-24khz-96kbitrate-mono-mp3",
+  "label": "Andrew · calm male voice"
+}
